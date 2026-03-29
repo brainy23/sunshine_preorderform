@@ -175,18 +175,13 @@
       font-size: 0.95rem;
     }
 
-    code {
-      background: #f3f3f3;
-      padding: 2px 5px;
-      border-radius: 4px;
-    }
-    .headerpng{
+    .headerpng {
       width: 100%;
     }
   </style>
 </head>
 <body>
-  <img src="sunshineform_head.png" class="headerpng">
+  <img src="sunshineform_head.png" class="headerpng" alt="Header">
 
   <form id="orderForm">
     <div class="section">
@@ -287,7 +282,7 @@
   </form>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiyHYmLp2EKgKNDlWGtJOjSeFRixD3UGYWSIAMHnH16GZMVQRHIrVc5hVB81mCkKWz/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw05cizrQvuIfL-VClssr869LQWQWhR8L31l8nmCzryLZzF-fA8cHv6DgtKQt2usC-u/exec";
 
     const DESIGNS = [
       { value: "67_kid", label: "67 Kid", frontImage: "nametent_pics/67_front.png", backImage: "nametent_pics/67_back.png" },
@@ -298,8 +293,7 @@
       { value: "pokemon", label: "Pokemon", frontImage: "nametent_pics/pokemon_front.png", backImage: "nametent_pics/pokemon_back.png" },
       { value: "linkedin", label: "LinkedIn", frontImage: "nametent_pics/linkedin_front.png", backImage: "nametent_pics/linkedin_back.png" },
       { value: "clash_royale", label: "Clash Royale", frontImage: "nametent_pics/clash_front.png", backImage: "nametent_pics/clash_back.png" },
-      { value: "monkey", label: "Monkey Meme", frontImage: "placeholder.png", backImage: "placeholder.png" },
-      { value: "niche_fruits", label: "Niche Fruits", frontImage: "placeholder.png", backImage: "placeholder.png" }
+      { value: "monkey", label: "Monkey Meme", frontImage: "nametent_pics/monkey_front.png", backImage: "nametent_pics/monkey_back.png" },
     ];
 
     const QUANTITY_SELECT_IDS = ["doubleTotalQty"];
@@ -465,13 +459,13 @@
             <h3>Name Tent ${i}</h3>
 
             <label for="doubleTent${i}Side1">Side 1 Design</label>
-            <select id="doubleTent${i}Side1" class="double-side-select" data-tent-index="${i}" data-side="1">
+            <select id="doubleTent${i}Side1" class="double-side-select">
               <option value="">Select a design</option>
               ${createDesignOptionsHtml()}
             </select>
 
             <label for="doubleTent${i}Side2">Side 2 Design</label>
-            <select id="doubleTent${i}Side2" class="double-side-select" data-tent-index="${i}" data-side="2">
+            <select id="doubleTent${i}Side2" class="double-side-select">
               <option value="">Select a design</option>
               ${createDesignOptionsHtml()}
             </select>
@@ -525,7 +519,6 @@
               id="doubleTentName${i}"
               maxlength="12"
               class="double-different-name-input"
-              data-tent-index="${i}"
             />
           </div>
         `;
@@ -616,12 +609,8 @@
 
       if (sameNameMode === "yes") {
         const sameName = document.getElementById("sameName").value.trim();
-        if (!sameName) {
-          return "Please enter the name to print.";
-        }
-        if (sameName.length > 12) {
-          return "The name must be 12 characters or fewer.";
-        }
+        if (!sameName) return "Please enter the name to print.";
+        if (sameName.length > 12) return "The name must be 12 characters or fewer.";
       } else {
         if (tentType === "single") {
           const inputs = document.querySelectorAll(".single-different-name-input");
@@ -645,21 +634,13 @@
         for (let i = 1; i <= qty; i++) {
           const side1 = document.getElementById(`doubleTent${i}Side1`).value;
           const side2 = document.getElementById(`doubleTent${i}Side2`).value;
-
-          if (!side1 || !side2) {
-            return `Please select both sides for Name Tent ${i}.`;
-          }
+          if (!side1 || !side2) return `Please select both sides for Name Tent ${i}.`;
         }
       }
 
       const file = document.getElementById("paynowImage").files[0];
-      if (!file) {
-        return "Please upload your PayNow screenshot.";
-      }
-
-      if (!file.type.startsWith("image/")) {
-        return "Please upload an image file only.";
-      }
+      if (!file) return "Please upload your PayNow screenshot.";
+      if (!file.type.startsWith("image/")) return "Please upload an image file only.";
 
       return null;
     }
@@ -681,7 +662,6 @@
       const tentType = getTentType();
       const sameNameMode = getSameNameMode();
       const total = calculateTotal();
-
       const singleSidedDesigns = collectSingleSidedDesignQtys();
 
       let sameNameValue = "";
@@ -708,7 +688,6 @@
         tentType: tentType,
         sameNameForAll: sameNameMode === "yes",
         sameName: sameNameValue,
-        designsMeta: DESIGNS,
         singleSidedDesigns: singleSidedDesigns,
         singleSidedNames: singleSidedNames,
         doubleSidedQty: getDoubleSidedTotalQty(),
@@ -722,22 +701,6 @@
       };
     }
 
-    function resetFormUI() {
-      form.reset();
-      document.getElementById("doubleTotalQty").value = "0";
-
-      DESIGNS.forEach(design => {
-        const select = document.getElementById(`qty_${design.value}`);
-        if (select) select.value = "0";
-      });
-
-      document.getElementById("paynowImage").value = "";
-      doubleTentSelectionContainer.innerHTML = "";
-      differentNamesContainer.innerHTML = "";
-      updateTentTypeUI();
-      calculateTotal();
-    }
-
     document.querySelectorAll('input[name="tentType"]').forEach(radio => {
       radio.addEventListener("change", updateTentTypeUI);
     });
@@ -747,10 +710,7 @@
     });
 
     document.addEventListener("change", (e) => {
-      if (
-        e.target.matches(".single-qty-select") ||
-        e.target.id === "doubleTotalQty"
-      ) {
+      if (e.target.matches(".single-qty-select") || e.target.id === "doubleTotalQty") {
         calculateTotal();
         buildDynamicSections();
       }
@@ -767,7 +727,7 @@
 
       const error = validateForm();
       if (error) {
-        formMessage.textContent = error;
+        alert(error);
         return;
       }
 
@@ -777,28 +737,25 @@
       try {
         const file = document.getElementById("paynowImage").files[0];
         const paynowImageBase64 = await fileToBase64(file);
-
         const payload = buildPayload(paynowImageBase64, file);
 
         await fetch(SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
-          body: JSON.stringify(payload),
           headers: {
             "Content-Type": "text/plain;charset=utf-8"
-          }
+          },
+          body: JSON.stringify(payload)
         });
 
-        formMessage.textContent = "Order submitted successfully!";
-        resetFormUI();
+        window.location.href = "success.html";
       } catch (err) {
         console.error(err);
-        formMessage.textContent = "Error submitting form.";
-      } finally {
+        alert("Form submission failed.");
+        formMessage.textContent = "Form submission failed.";
         submitBtn.disabled = false;
       }
     });
   </script>
 </body>
 </html>
-
