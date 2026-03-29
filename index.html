@@ -453,7 +453,7 @@
   </form>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw05cizrQvuIfL-VClssr869LQWQWhR8L31l8nmCzryLZzF-fA8cHv6DgtKQt2usC-u/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznkkicwJ3ckVBFwwba2U5Hxd9qtBpMtK6r23H73t7HL2V9ebJQsgKS3yDFDObhzxEs/exec";
 
     const DESIGNS = [
       { value: "67_kid", label: "67 Kid", frontImage: "nametent_pics/67_front.png", backImage: "nametent_pics/67_back.png" },
@@ -850,33 +850,35 @@
       }
 
       if (tentType === "single") {
-        const singleSidedDesigns = collectSingleSidedDesignQtys();
-        const singleSidedNames =
-          sameNameMode === "no" ? collectSingleSidedNames() : {};
+      const singleSidedDesigns = collectSingleSidedDesignQtys();
+      const singleSidedInfo = buildSingleSidedInfo();
 
-        return {
-          customerName: document.getElementById("customerName").value.trim(),
-          contact: document.getElementById("contact").value.trim(),
-          tentType: "single",
-          sameNameForAll: sameNameMode === "yes",
-          sameName: sameNameValue,
+      return {
+        customerName: document.getElementById("customerName").value.trim(),
+        contact: document.getElementById("contact").value.trim(),
+        tentType: "single",
+        sameNameForAll: sameNameMode === "yes",
+        sameName: sameNameValue,
 
-          // keep only single-sided data
-          singleSidedDesigns: singleSidedDesigns,
-          singleSidedNames: singleSidedNames,
+        // NEW
+        singleSidedQty: getSingleSidedTotalQty(),
 
-          // discard all double-sided data
-          doubleSidedQty: 0,
-          doubleSidedInfo: [],
+        // keep both (optional but useful)
+        singleSidedDesigns: singleSidedDesigns,
+        singleSidedInfo: singleSidedInfo,
 
-          amountPayable: total,
-          paynowImage: {
-            fileName: file.name,
-            mimeType: file.type,
-            base64Data: paynowImageBase64
-          }
-        };
-      }
+        // discard double
+        doubleSidedQty: 0,
+        doubleSidedInfo: [],
+
+        amountPayable: total,
+        paynowImage: {
+          fileName: file.name,
+          mimeType: file.type,
+          base64Data: paynowImageBase64
+        }
+      };
+    }
 
       if (tentType === "double") {
         const doubleSidedInfo = collectDoubleSidedInfo();
@@ -905,6 +907,34 @@
         };
       }
     }
+    function buildSingleSidedInfo() {
+  const sameNameMode = getSameNameMode();
+  const result = {};
+
+  DESIGNS.forEach(design => {
+    const qty = getSingleDesignQty(design.value);
+    if (qty <= 0) return;
+
+    let names = [];
+
+    if (sameNameMode === "yes") {
+      const sameName = document.getElementById("sameName").value.trim();
+      names = Array(qty).fill(sameName);
+    } else {
+      for (let i = 1; i <= qty; i++) {
+        const input = document.getElementById(`${design.value}Name${i}`);
+        names.push(input ? input.value.trim() : "");
+      }
+    }
+
+    result[design.value] = {
+      qty: qty,
+      names: names
+    };
+  });
+
+  return result;
+}
 
     document.querySelectorAll('input[name="tentType"]').forEach(radio => {
       radio.addEventListener("change", updateTentTypeUI);
