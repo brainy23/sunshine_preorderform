@@ -178,6 +178,125 @@
     .headerpng {
       width: 100%;
     }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 2rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 1rem;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .price-tag {
+      display: inline-block;
+      background: #eef4ff;
+      color: #234;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
+    .image-box {
+      margin: 18px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e5e5e5;
+      background: #fafafa;
+    }
+
+    .image-box img {
+      width: 100%;
+      display: block;
+    }
+
+    .side-demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .side {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+      background: white;
+      text-align: center;
+    }
+
+    .side-label {
+      background: #f2f2f2;
+      padding: 8px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .side img {
+      width: 100%;
+      display: block;
+    }
+
+    .blank-side {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      color: #999;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    ul {
+      padding-left: 18px;
+      margin-bottom: 0;
+      color: #444;
+      line-height: 1.6;
+    }
+
+    .note {
+      margin-top: 28px;
+      text-align: center;
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 600px) {
+      .side-demo {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -195,9 +314,61 @@
     </div>
 
     <div class="section">
-      <h2>Name Tent Type</h2>
+      <div class="container">
+    <h1>Name Tent Options</h1>
+    <p class="subtitle">
+      Choose between a single-sided or double-sided name tent.
+    </p>
 
-      <label>Choose your name tent type</label>
+    <div class="comparison">
+      <!-- Single-sided -->
+      <div class="card">
+        <h2>Single-Sided Name Tent</h2>
+        <div class="price-tag">1 design only</div>
+
+        <div class="side-demo">
+          <div class="side">
+            <div class="side-label">Front</div>
+            <img src="External (5).png" alt="Single-sided name tent design">
+          </div>
+          <div class="side">
+            <div class="side-label">Back</div>
+            <div class="blank-side">Blank / White</div>
+          </div>
+        </div>
+
+        <ul>
+          <li>One side has your selected design.</li>
+          <li>The other side is left blank in white.</li>
+        </ul>
+      </div>
+
+      <!-- Double-sided -->
+      <div class="card">
+        <h2>Double-Sided Name Tent</h2>
+        <div class="price-tag">2 designs included</div>
+
+        <div class="side-demo">
+          <div class="side">
+            <div class="side-label">Side 1</div>
+            <img src="External (5).png" alt="Double-sided name tent design side 1">
+          </div>
+          <div class="side">
+            <div class="side-label">Side 2</div>
+            <img src="External (6).png" alt="Double-sided name tent design side 2">
+          </div>
+        </div>
+
+        <ul>
+          <li>Both sides are printed.</li>
+          <li>One side uses Design 1.</li>
+          <li>The second side uses Design 2.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+      <h2>Choose your name tent type</h2>
       <div class="radio-group">
         <label>
           <input type="radio" name="tentType" value="single" checked />
@@ -430,10 +601,20 @@
         singleSidedSection.classList.remove("hidden");
         doubleSidedSection.classList.add("hidden");
         pricingNote.textContent = "Single-sided pricing: 1 for $4, 2 for $7";
+
+        // clear double-sided selections when switching to single
+        document.getElementById("doubleTotalQty").value = "0";
+        doubleTentSelectionContainer.innerHTML = "";
       } else {
         singleSidedSection.classList.add("hidden");
         doubleSidedSection.classList.remove("hidden");
         pricingNote.textContent = "Double-sided pricing: 1 for $5, 2 for $8";
+
+        // clear single-sided quantities when switching to double
+        DESIGNS.forEach(design => {
+          const qtyEl = document.getElementById(`qty_${design.value}`);
+          if (qtyEl) qtyEl.value = "0";
+        });
       }
 
       buildDynamicSections();
@@ -662,43 +843,67 @@
       const tentType = getTentType();
       const sameNameMode = getSameNameMode();
       const total = calculateTotal();
-      const singleSidedDesigns = collectSingleSidedDesignQtys();
 
       let sameNameValue = "";
-      let singleSidedNames = {};
-      let doubleSidedInfo = [];
-
       if (sameNameMode === "yes") {
         sameNameValue = document.getElementById("sameName").value.trim();
-      } else {
-        if (tentType === "single") {
-          singleSidedNames = collectSingleSidedNames();
-        } else {
-          doubleSidedInfo = collectDoubleSidedInfo();
-        }
       }
 
-      if (tentType === "double" && sameNameMode === "yes") {
-        doubleSidedInfo = collectDoubleSidedInfo();
+      if (tentType === "single") {
+        const singleSidedDesigns = collectSingleSidedDesignQtys();
+        const singleSidedNames =
+          sameNameMode === "no" ? collectSingleSidedNames() : {};
+
+        return {
+          customerName: document.getElementById("customerName").value.trim(),
+          contact: document.getElementById("contact").value.trim(),
+          tentType: "single",
+          sameNameForAll: sameNameMode === "yes",
+          sameName: sameNameValue,
+
+          // keep only single-sided data
+          singleSidedDesigns: singleSidedDesigns,
+          singleSidedNames: singleSidedNames,
+
+          // discard all double-sided data
+          doubleSidedQty: 0,
+          doubleSidedInfo: [],
+
+          amountPayable: total,
+          paynowImage: {
+            fileName: file.name,
+            mimeType: file.type,
+            base64Data: paynowImageBase64
+          }
+        };
       }
 
-      return {
-        customerName: document.getElementById("customerName").value.trim(),
-        contact: document.getElementById("contact").value.trim(),
-        tentType: tentType,
-        sameNameForAll: sameNameMode === "yes",
-        sameName: sameNameValue,
-        singleSidedDesigns: singleSidedDesigns,
-        singleSidedNames: singleSidedNames,
-        doubleSidedQty: getDoubleSidedTotalQty(),
-        doubleSidedInfo: doubleSidedInfo,
-        amountPayable: total,
-        paynowImage: {
-          fileName: file.name,
-          mimeType: file.type,
-          base64Data: paynowImageBase64
-        }
-      };
+      if (tentType === "double") {
+        const doubleSidedInfo = collectDoubleSidedInfo();
+
+        return {
+          customerName: document.getElementById("customerName").value.trim(),
+          contact: document.getElementById("contact").value.trim(),
+          tentType: "double",
+          sameNameForAll: sameNameMode === "yes",
+          sameName: sameNameValue,
+
+          // discard all single-sided data
+          singleSidedDesigns: {},
+          singleSidedNames: {},
+
+          // keep only double-sided data
+          doubleSidedQty: getDoubleSidedTotalQty(),
+          doubleSidedInfo: doubleSidedInfo,
+
+          amountPayable: total,
+          paynowImage: {
+            fileName: file.name,
+            mimeType: file.type,
+            base64Data: paynowImageBase64
+          }
+        };
+      }
     }
 
     document.querySelectorAll('input[name="tentType"]').forEach(radio => {
